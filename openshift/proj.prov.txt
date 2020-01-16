@@ -1,0 +1,95 @@
+Install the Project Provisioner
+Now log on to a machine on which:
+you can "oc login" to the OpenShift Cluster
+you can run the "skopeo" command
+you can clone the "https://xescm.xeop.de/kv082/project-provisioner.git" repository.
+ 
+Be in the cloned "project-provisioner" directory.
+ 
+You will need a login to the Red Hat Customer Portal, to allow access to the image we are trying to copy - below this is given as "user@example.com" with the password "passw0rd".
+ 
+$ export HTTPS_PROXY=http://webproxy.deutsche-boerse.de:8080
+$ export NO_PROXY=".svc,xeop.de"
+ 
+$ oc login https://osr3-cluster.xeop.de:8443
+ 
+If you don't already have an externally visible endpoint for the internal registry, create one. If you don't do this, you will need to run "skopeo" on a machine which does have access to the internal docker-registry.cluster.svc:5000 address.
+
+$ oc expose service docker-registry -n default
+ 
+$ skopeo copy docker://registry.redhat.io/openshift4/ose-ansible-operator:v4.1 docker://docker-registry-default.osr3.xeop.de/openshift/ose-ansible-operator:latest --dest-creds $(oc whoami):$(oc whoami -t) --src-creds 'user@example.com:passw0rd' --dest-tls-verify=false
+ 
+We now set up the new project-provisioner project to hold the provisioner code
+ 
+$ oc new-project project-provisioner
+ 
+$ grep "uri:" build/buildconfig/enterprise.yaml
+      uri: 'https://xescm.xeop.de/kv082/project-provisioner.git'
+ 
+$ oc create -f build/buildconfig/enterprise.yaml
+imagestream.image.openshift.io/project-provisioner created
+buildconfig.build.openshift.io/project-provisioner created
+ 
+$ oc create -f deploy/service_account.yaml
+serviceaccount/project-provisioner created
+ 
+$ oc create -f deploy/role.yaml
+clusterrole.rbac.authorization.k8s.io/project-provisioner created
+ 
+$ oc create -f deploy/role_binding.yaml
+clusterrolebinding.rbac.authorization.k8s.io/project-provisioner created
+clusterrolebinding.rbac.authorization.k8s.io/project-self-provisioner created
+ 
+$ grep "image:" deploy/operator-enterprise.yaml
+    image: "docker-registry.default.svc:5000/project-provisioner/project-provisioner:latest"
+ 
+$ oc create -f deploy/operator-enterprise.yaml
+deployment.apps/project-provisioner created
+ 
+$ oc create -f deploy/crds/projectprovisioner_v1_projectprovisioner_crd.yaml
+customresourcedefinition.apiextensions.k8s.io/projectprovisioners.project-provisioner.io created
+ 
+At this point, check the "Builds/Build Configs" section on the OpenShift console, and verify that "project-provisioner" is there. Click on the "project-provisioner" name, and click the "Builds" heading. Make sure that at least one build has started, and is preferably marked "Complete". If there aren't any builds, first check the "Events" to see whether any are reported and fix any problems, then click on "actions" at the top right and select "Start Build". After that, or if there were any builds previously, Check the "Logs" for errors. One possible problem is access permissions on the code repository - this should be Public. (On reflection, it may be better to do this work before the  "deploy/operator-enterprise" step)
+ 
+Run the Project Provisioner
+
+If all is well, and the project-provisioner/project-provisioner image has been built, start the Operator
+ 
+$ grep "project_def" deploy/crds/projectprovisioner_v1_projectprovisioner_cr.yaml
+project_definition_git: "https://xescm.xeop.de/kv082/provision-test.git"
+ 
+$ oc create -f deploy/crds/projectprovisioner_v1_projectprovisioner_cr.yaml
+projectprovisioner.project-provisioner.io/example-projectprovisioner created
+ 
+Now look at the OpenShift console to see any new projects being created.
+ 
+If nothing seems to be happening, select the "project-provisioner" project, and click on "Pods" on the left-hand menu. Click the small gear wheel to  the left of the "project-provisioner-xxxxxx-yyyy" name, and click “Delete Pod”. The POD will be deleted and automatically recreated.
+
+To stop the Project Provisioner consuming a lot of CPU, delete the Custom Resource once all of the required changes have been made to projects.
+
+$ oc delete -f deploy/crds/projectprovisioner_v1_projectprovisioner_cr.yaml
+ 
+Verify the changes
+To check whether the changes have been applied, list the rolebindings in the target projects, and compare against the list in the above configuration file. For example, to check the settings in the hedgehog-acceptance project. Some accounts created automatically have been omitted from the text below as it confused the output.
+
+$ oc get rolebindings -n hedgehog-acceptance
+NAME                         ROLE                  USERS           GROUPS
+admin                        /admin                system:serv...
+hedgehog-act-admin-admin     /admin                                hedgehog-act-admin
+hedgehog-act-deployer-edit   /edit                                 hedgehog-act-deployer
+hedgehog-act-operator-view   /view                                 hedgehog-act-operator
+kv082-admin                  /admin                kv082
+system:image-pullers         /system:image-puller
+Update the projects 
+If changes are made to the provision-test repository to add a new cluster, delete an old one, or change the permissions for an existing on, create the Custom Resource again, and delete it after the changes have been made:
+
+$ oc create -f deploy/crds/projectprovisioner_v1_projectprovisioner_cr.yaml
+
+Wait a few minutes.
+
+$ oc delete -f deploy/crds/projectprovisioner_v1_projectprovisioner_cr.yaml
+
+Update the Provisioner code
+If you make changes to the Project Provisioner code, you will need to rebuild the POD, and redeploy it. See above for instructions on how to start a new build, and how to delete the running POD so that it restarts with the newly built image.
+
+

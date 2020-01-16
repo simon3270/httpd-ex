@@ -1,0 +1,17 @@
+To make this change, log on to all three Master nodes in the cluster as root, and on each one edit /etc/origin/master/master-config.yaml. Search for the “url:” tag and change it from this (the last field might be sAMAccountName)
+
+url: ldap://FRA-LDAP-OAAD.oa.pnrad.net/OU=Accounts,DC=oa,DC=pnrad,DC=net?cn
+
+To this:
+
+url: ldap://FRA-LDAP-OAAD.oa.pnrad.net/OU=Accounts,DC=oa,DC=pnrad,DC=net?sAMAccountName?sub?(memberOf=CN=xeops-ocp-act-user,OU=XEOPS,OU=Appl Groups,OU=Accounts,DC=oa,DC=pnrad,DC=net)
+
+(all on one line). I have used sAMAccountName as the identifier rather than cn, since this is also used in the LDAP Group Sync code.
+
+Then, while still logged on as root, on each node run:
+
+# master-restart api
+# master-restart controllers
+
+Wait a couple of minutes, then test by logging on to the the console, once by a user in xeops-ocp-act-user (which should succeed, and once by a user not in that group (the login should fail).
+

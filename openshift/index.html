@@ -1,0 +1,23 @@
+sh-4.2# gluster volume status vol_ef3c243429ed8be608ba72f457cc7cc0
+Status of volume: vol_ef3c243429ed8be608ba72f457cc7cc0
+Gluster process                             TCP Port  RDMA Port  Online  Pid
+------------------------------------------------------------------------------
+Brick 172.16.123.66:/var/lib/heketi/mounts/
+vg_26431b755e0c2d50a8a45b9882f00a1d/brick_f
+6d22eb935dc076c4644acce733170b3/brick       49152     0          Y       185
+Brick 172.16.123.64:/var/lib/heketi/mounts/
+vg_17daafb1bcea724f1dc135bdd635042a/brick_6
+13a0418f28b4da9eb5558f8b6e8d7f2/brick       N/A       N/A        N       N/A
+Brick 172.16.123.67:/var/lib/heketi/mounts/
+vg_5652cf5b3d6c25533c905248daabd56f/brick_4
+f84b79b3e8eaea47974c232627b4324/brick       N/A       N/A        N       N/A
+Self-heal Daemon on localhost               N/A       N/A        Y       55344
+Self-heal Daemon on osr4glfs01.xeop.de      N/A       N/A        Y       1611
+Self-heal Daemon on osr4glfs02.xeop.de      N/A       N/A        Y       51980
+Self-heal Daemon on 172.16.123.67           N/A       N/A        Y       1560
+
+Task Status of Volume vol_ef3c243429ed8be608ba72f457cc7cc0
+------------------------------------------------------------------------------
+There are no active volume tasks
+
+gluster volume status | egrep 'Status of volume:| N '

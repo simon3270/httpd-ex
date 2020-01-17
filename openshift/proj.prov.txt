@@ -94,3 +94,5 @@ If you make changes to the Project Provisioner code, you will need to rebuild th
 
 
 oc patch clusterrolebinding.rbac self-provisioners -p '{"metadata": {"annotations": {"rbac.authorization.kubernetes.io/autoupdate": "false"}}, "subjects": null}'
+
+ url: ldap://FRA-LDAP-OAAD.oa.pnrad.net/OU=Accounts,DC=oa,DC=pnrad,DC=net?sAMAccountName?sub?(|(|(|(memberOf=CN=xeops-ocp-act-user,OU=XEOPS,OU=Appl Groups,OU=Accounts,DC=oa,DC=pnrad,DC=net)(sAMAccountName=kv082))(memberOf=CN=xeops-ocp-act-admin,OU=XEOPS,OU=Appl Groups,OU=Accounts,DC=oa,DC=pnrad,DC=net))(memberOf=CN=xeops-ocp-tectest-user,OU=XEOPS,OU=Appl Groups,OU=Accounts,DC=oa,DC=pnrad,DC=net))

@@ -93,3 +93,4 @@ Update the Provisioner code
 If you make changes to the Project Provisioner code, you will need to rebuild the POD, and redeploy it. See above for instructions on how to start a new build, and how to delete the running POD so that it restarts with the newly built image.
 
 
+oc patch clusterrolebinding.rbac self-provisioners -p '{"metadata": {"annotations": {"rbac.authorization.kubernetes.io/autoupdate": "false"}}, "subjects": null}'

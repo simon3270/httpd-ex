@@ -1,0 +1,41 @@
+================== build/buildconfig/enterprise.yaml ===============
+25c25
+<       uri: 'https://xescm.xeop.de/kv082/project-provisioner.git'
+---
+>       uri: 'https://github.com/havilland/project-provisioner.git'
+================== deploy/crds/projectprovisioner_v1_projectprovisioner_cr.yaml ===============
+4c4
+<   name: third-projectprovisioner
+---
+>   name: example-projectprovisioner
+6c6
+<   project_definition_git: "https://xescm.xeop.de/kv082/provision-test.git"
+---
+>   project_definition_git: "https://gitlab.com/havilland/project-testing.git"
+\ No newline at end of file
+================== deploy/operator-enterprise.yaml ===============
+19c19
+<           image: "docker-registry.default.svc:5000/project-provisioner/project-provisioner:latest"
+---
+>           image: "docker-registry.default.svc:5000/openshift/project-provisioner:v0.11"
+================== deploy/role.yaml ===============
+54d53
+<   - delete
+================== deploy/role_binding.yaml ===============
+8c8
+<   namespace: project-provisioner
+---
+>   namespace:
+21c21
+<     namespace: project-provisioner
+---
+>     namespace:
+================== roles/projectprovisioner/tasks/project-provision.yml ===============
+32,36c32
+<         # Name allows multiple users/groups to have the same role
+<         # but each user or group can only have one role.
+<         # To allow a user or group to have multiple roles, use this:
+<         #    name: "{{ item.subjectName }}-{{ item.role }}"
+<         name: "{{ item.subjectName }}"
+---
+>         name: "{{ current_project.name }}-{{ item.role }}"

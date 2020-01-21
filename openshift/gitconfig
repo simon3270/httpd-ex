@@ -1,0 +1,9 @@
+# This is Git's per-user configuration file.
+[user]
+name = Simon Reap
+#email = sreap@redhat.com
+email = simon3270@gmail.com
+
+[alias]
+update-from = "!f() { git fetch $1 --prune; git merge --ff-only $1/$2 || git rebase --preserve-merges $1/$2; }; f"
+lg = log --graph --all --color --pretty='%x09%h %cn%x09%s %Cred%d'

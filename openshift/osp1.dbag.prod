@@ -1,0 +1,232 @@
+# Create an OSEv3 group that contains the masters and nodes groups
+[OSEv3:children]
+masters
+nodes
+etcd
+glusterfs
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+# OpenShift Version:
+# If you modify the openshift_image_tag or the openshift_pkg_version variables after the cluster is set up, then an upgrade can be triggered, resulting in downtime.
+# If openshift_image_tag is set, its value is used for all hosts in system container environments, even those that have another version installed. If
+# Use this variable to specify a container image tag to install or configure.
+#openshift_pkg_version is set, its value is used for all hosts in RPM-based environments, even those that have another version installed.
+openshift_image_tag=v3.11.153
+# 154 is latest 98 is installed on Dev and 117 is installed on osr1/2
+# Use this variable to specify an RPM version to install or configure.
+openshift_pkg_version=-3.11.153
+openshift_release="3.11"
+
+ansible_ssh_user=root
+#ansible_become=yes
+# https://github.com/openshift/openshift-ansible/blob/master/DEPLOYMENT_TYPES.md
+deployment_type=openshift-enterprise
+#oreg_url=registry.redhat.io/openshift3/ose-${component}:${version}
+oreg_auth_user=4969868|osp1-dbag-prod-ansible
+oreg_auth_password=eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiIyMTg5YTZhYTg5N2Q0ZGI1YWQyNjgzZmZkZDg4MGRhNSJ9.wJBNCmv7K-YeH4ww9kw3d7ulPGKodlhOkIgY_pnLmblo8Aa7S-Z4Th7sYKa_RH6F6LA2i209paKFtNGz-6DSFUiVDK6u5SGZgkPraLNJzSn1AbXNw74wQqdOO3MTVNg6L2TrEMa-jNZuMDTBPX_I3eeDW2gKzC2kIBKNP_1cRcMtIx1WDq74JX3qeFaxU0lLE2Mg8dOKiUIDzY3AZT8UwMH6G6pL--4uG4MTg3RTgzK_UoxobxJeTcLegp0jBHNdQeO-EoV2HBmhpEver00V--AwLutCUi4VutEuhaw7Gt3jXtc4i0ShVQmye2oypjlQk67dTPh2pu6PhdHdNQrmeTlemq-Zy2qze1-FAPFaKo6K72xqZ-pPuw4tYXK5V0c7PLrLaB7JXw6JAYUdwQEqaOPOyboBlDGhxrW4FmpGPPEwxgyimBOpI3gmulFRp07gz10r5Yvj_02NiF0tIV1trvYkk1L6fZQwypoWlWBN5Cmeqw1p_u3g4BTAgahA9oESuCorn2xzqyEuA-sQHgHEvEnzs2TfKCltmmpudYKKItD2qQHyUPInDNagQHKdT5kNByRzkPjRoUy5yq6cp1FDqjlJqbVCVc25vgBpMVLcl9H9QO843ix_cr64e15UZc9_qt54z8AR3UruRqr6_pjAERA0GsBnWxx1BPoHllwffEg
+
+# Configure usage of openshift_clock role.
+openshift_clock_enabled=true
+
+# Set upgrade restart mode for full system restarts
+openshift_rolling_restart_mode=system
+
+# Enable cockpit
+osm_use_cockpit=false
+osm_cockpit_plugins=['cockpit-kubernetes', 'cockpit-pcp', 'setroubleshoot-server']
+
+# Docker / Registry Configuration
+openshift_docker_disable_push_dockerhub=True
+openshift_docker_options="--log-driver=journald --log-level=warn --ipv6=false"
+openshift_docker_insecure_registries=docker-registry.default.svc,docker-registry.default.svc.cluster.local,docker-registry.default.svc:5000,docker-registry.default.svc.cluster.local:5000
+openshift_docker_blocked_registries=all
+openshift_docker_additional_registries=registry.access.redhat.com,docker-registry.default.svc,docker-registry.default.svc.cluster.local,docker-registry.default.svc:5000,docker-registry.default.svc.cluster.local:5000
+
+container_runtime_docker_storage_setup_device=/dev/vdb
+
+# CRIO
+openshift_use_crio=False
+openshift_use_crio_only=False
+openshift_crio_enable_docker_gc=True
+openshift_crio_var_sock='unix:///var/run/crio/crio.sock'
+
+# firewalld enable
+os_firewall_use_firewalld=True
+
+# Configure nodeIP in the node config
+# This is needed in cases where node traffic is desired to go over an
+# interface other than the default network interface.
+
+# Configure the multi-tenant SDN plugin (default is 'redhat/openshift-ovs-subnet')
+#os_sdn_network_plugin_name=redhat/openshift-ovs-multitenant
+os_sdn_network_plugin_name=redhat/openshift-ovs-networkpolicy
+
+# Configure SDN cluster network and kubernetes service CIDR blocks. These
+# network blocks should be private and should not conflict with network blocks
+# in your infrastructure that pods may require access to. Can not be changed
+# after deployment.
+osm_cluster_network_cidr=10.1.0.0/16
+openshift_portal_net=172.30.0.0/16
+osm_host_subnet_length=8
+
+#Proxy
+openshift_http_proxy=http://webproxy.deutsche-boerse.de:8080
+openshift_https_proxy=http://webproxy.deutsche-boerse.de:8080
+openshift_no_proxy='.osp1.dbag.prod,.dbag.prod,.deutsche-boerse.de,.cluster.local,.svc,localhost,127.0.0.1,172.30.0.1,172.16.122.172,172.16.122.173,172.16.122.185'
+openshift_generate_no_proxy_hosts=false
+
+# htpasswd auth
+#### openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+openshift_master_identity_providers=[{'name': 'ldap', 'challenge': 'true', 'login': 'true', 'mappingMethod': 'claim', 'kind': 'LDAPPasswordIdentityProvider', 'attributes': {'id': ['dn'], 'email': ['mail'], 'name': ['displayName'], 'preferredUsername': ['cn']}, 'bindDN': 'CN=xeops bind,OU=Technical Accounts,OU=Accounts,DC=oa,DC=pnrad,DC=net', 'bindPassword': 'KlOJ5OZhK7*1_a', 'insecure': 'true', 'url': 'ldap://FRA-LDAP-OAAD.oa.pnrad.net/OU=Accounts,DC=oa,DC=pnrad,DC=net?cn'}]
+
+
+# Provide local certificate paths which will be deployed to masters
+openshift_master_overwrite_named_certificates=true
+
+# Install the openshift examples
+openshift_install_examples=false
+openshift_examples_modify_imagestreams=false
+
+# default subdomain to use for exposed routes
+openshift_master_default_subdomain=osp1.dbag.prod
+openshift_master_cluster_hostname=osp1clusterinternal.dbag.prod
+openshift_master_cluster_public_hostname=osp1cluster.dbag.prod
+
+openshift_hosted_router_certificate={"certfile": "~/git/ansible/osp.dbag.prod/certs/osp/osp-cluster_dbag_prod_cert.cer", "keyfile": "~/git/ansible/osp.dbag.prod/certs/osp/osp-cluster.dbag.prod.key", "cafile": "~/git/ansible/osp.dbag.prod/certs/osp/osp-cluster_dbag_prod_interm.cer"}
+
+openshift_hosted_router_replicas=2
+openshift_hosted_registry_replicas=2
+
+
+# Openshift Registry Options
+openshift_hosted_registry_storage_kind=glusterfs
+openshift_hosted_registry_replicas=1
+openshift_hosted_registry_storage_volume_size=20Gi
+openshift_hosted_registry_selector='node-role.kubernetes.io/infra=true'
+
+
+#OCS
+openshift_storage_glusterfs_namespace=ocs
+openshift_storage_glusterfs_name=ocs
+openshift_storage_glusterfs_wipe=True
+openshift_storage_glusterfs_storageclass=true
+openshift_storage_glusterfs_storageclass_default=true
+openshift_storage_glusterfs_storageclass_volume_options="user.heketi.arbiter true"
+
+openshift_storage_glusterfs_image=registry.redhat.io/rhgs3/rhgs-server-rhel7:v3.11
+openshift_storage_glusterfs_block_image=registry.redhat.io/rhgs3/rhgs-gluster-block-prov-rhel7:v3.11
+openshift_storage_glusterfs_s3_image=registry.redhat.io/rhgs3/rhgs-s3-server-rhel7:v3.11
+openshift_storage_glusterfs_heketi_image=registry.redhat.io/rhgs3/rhgs-volmanager-rhel7:v3.11
+
+openshift_storage_glusterfs_block_deploy=True
+openshift_storage_glusterfs_block_host_vol_create=true
+openshift_storage_glusterfs_block_host_vol_size=50
+openshift_storage_glusterfs_block_storageclass=true
+
+# Metrics deployment
+openshift_metrics_install_metrics=True
+openshift_metrics_hawkular_hostname=metrics.osp1.dbag.prod
+openshift_metrics_hawkular_replicas=1
+openshift_metrics_cassandra_replicas=1
+openshift_metrics_cassandra_limits_memory=2Gi
+openshift_metrics_duration=5
+openshift_metrics_cassandra_pvc_size=10Gi
+openshift_metrics_cassandra_storage_type=dynamic
+openshift_metrics_cassandra_pvc_storage_class_name=glusterfs-ocs-block
+openshift_metrics_hawkular_nodeselector={"node-role.kubernetes.io/infra": "true"}
+openshift_metrics_cassandra_nodeselector={"node-role.kubernetes.io/infra": "true"}
+openshift_metrics_heapster_nodeselector={"node-role.kubernetes.io/infra": "true"}
+
+# Openshift Metrics Server  deployment for AutoScaler
+openshift_metrics_server_install=true
+
+
+# Logging deployment
+openshift_logging_install_logging=True
+openshift_logging_kibana_hostname=logging.osp1.dbag.prod
+openshift_logging_use_ops=false
+openshift_logging_public_master_url=https://osp1ha.dbag.prod:8443
+openshift_logging_curator_default_days=1
+openshift_logging_es_pvc_size=10Gi
+openshift_logging_es_pvc_dynamic=true
+openshift_logging_es_pvc_storage_class_name=glusterfs-ocs-block
+openshift_logging_es_memory_limit=8Gi
+openshift_logging_kibana_nodeselector={"node-role.kubernetes.io/infra": "true"}
+openshift_logging_curator_nodeselector={"node-role.kubernetes.io/infra": "true"}
+openshift_logging_es_nodeselector={"node-role.kubernetes.io/infra": "true"}
+
+# Prometheus
+openshift_cluster_monitoring_operator_install=True
+openshift_cluster_monitoring_operator_prometheus_storage_enabled=true
+openshift_cluster_monitoring_operator_alertmanager_storage_enabled=true
+openshift_cluster_monitoring_operator_prometheus_storage_capacity=50Gi
+openshift_cluster_monitoring_operator_node_selector={"node-role.kubernetes.io/infra":"true"}
+
+#### Satellite as Container registry:
+openshift_docker_additional_registries=xepsat01.dbag.prod:5000 
+openshift_docker_insecure_registries=xepsat01.dbag.prod:5000 
+openshift_docker_blocked_registries=registry.access.redhat.com,docker.io 
+oreg_url=xepsat01.dbag.prod:5000/organization-containers-ose-${component}:${version} 
+openshift_examples_modify_imagestreams=true
+openshift_cockpit_deployer_prefix=xepsat01.dbag.prod:5000/organization-containers-
+openshift_cockpit_deployer_version=latest
+openshift_web_console_prefix=xepsat01.dbag.prod:5000/organization-containers-ose- 
+openshift_web_console_version=latest
+
+#### For metrics, logging, prometheus and service-broker use following variables.Raw
+openshift_metrics_image_prefix=xepsat01.dbag.prod:5000/organization-containers- 
+openshift_metrics_image_version=latest 
+openshift_logging_image_prefix=xepsat01.dbag.prod:5000/organization-containers- 
+openshift_logging_image_version=latest 
+ansible_service_broker_image_prefix=xepsat01.dbag.prod:5000/organization-containers- 
+ansible_service_broker_image_tag=latest
+ansible_service_broker_etcd_image_prefix=xepsat01.dbag.prod:5000/organization-containers- 
+ansible_service_broker_etcd_image_tag=latest 
+openshift_service_catalog_image_prefix=xepsat01.dbag.prod:5000/organization-containers- 
+openshift_service_catalog_image_version=latest 
+template_service_broker_prefix=xepsat01.dbag.prod:5000/organization-containers- 
+template_service_broker_version=latest
+
+
+
+# nedded beacuse we want compute-storage
+#openshift_node_groups=[{'name': 'node-config-master', 'labels': ['node-role.kubernetes.io/master=true']}, {'name': 'node-config-infra', 'labels': ['node-role.kubernetes.io/infra=true']}, {'name': 'node-config-compute', 'labels': ['node-role.kubernetes.io/compute=true']}, {'name': 'node-config-compute-storage', 'labels': ['node-role.kubernetes.io/compute-storage=true']}]
+# Actually this value is retrieved from group-vars in the git repository
+
+
+[masters]
+osp1master01.dbag.prod
+osp1master02.dbag.prod
+osp1master03.dbag.prod
+
+[etcd]
+osp1master01.dbag.prod
+osp1master02.dbag.prod
+osp1master03.dbag.prod
+
+[glusterfs]
+osp1glfs01.dbag.prod glusterfs_ip=10.90.130.214 glusterfs_devices='[ "/dev/vdc" ]' glusterfs_zone=1 glusterfs_nodetags='{ "arbiter": "disabled" }'
+osp1glfs02.dbag.prod glusterfs_ip=10.90.130.215 glusterfs_devices='[ "/dev/vdc" ]' glusterfs_zone=3 glusterfs_nodetags='{ "arbiter": "required" }'
+osp1glfs03.dbag.prod glusterfs_ip=10.90.130.216 glusterfs_devices='[ "/dev/vdc" ]' glusterfs_zone=2 glusterfs_nodetags='{ "arbiter": "disabled" }'
+osp1glfs04.dbag.prod glusterfs_ip=10.90.130.217 glusterfs_devices='[ "/dev/vdc" ]' glusterfs_zone=3 glusterfs_nodetags='{ "arbiter": "required" }'
+
+[nodes]
+osp1master01.dbag.prod openshift_node_group_name='node-config-master'
+osp1master02.dbag.prod openshift_node_group_name='node-config-master'
+osp1master03.dbag.prod openshift_node_group_name='node-config-master'
+
+osp1infra01.dbag.prod openshift_node_group_name='node-config-infra'
+osp1infra02.dbag.prod openshift_node_group_name='node-config-infra'
+osp1infra03.dbag.prod openshift_node_group_name='node-config-infra'
+
+osp1node01.dbag.prod openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true 
+osp1node02.dbag.prod openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true 
+osp1node03.dbag.prod openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true 
+osp1node04.dbag.prod openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true 
+
+osp1glfs01.dbag.prod openshift_node_group_name='node-config-compute-storage'
+osp1glfs02.dbag.prod openshift_node_group_name='node-config-compute-storage'
+osp1glfs03.dbag.prod openshift_node_group_name='node-config-compute-storage'
+osp1glfs04.dbag.prod openshift_node_group_name='node-config-compute-storage'
+

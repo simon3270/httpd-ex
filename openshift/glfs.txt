@@ -1,0 +1,10 @@
+[kv082@osansible:1 osr3 osr.xeop.de]$ oc get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                                                           STORAGECLASS          REASON    AGE
+pvc-0b4e0e00-386a-11ea-b7da-002a4a107842   10Gi       RWO            Delete           Bound     openshift-infra/metrics-cassandra-1                             glusterfs-ocs                   6d
+pvc-80225f66-3869-11ea-bfd9-002a4a107843   50Gi       RWO            Delete           Bound     openshift-monitoring/prometheus-k8s-db-prometheus-k8s-0         glusterfs-ocs                   6d
+pvc-a68244e6-3b60-11ea-b0ec-002a4a107842   10Gi       RWO            Delete           Bound     openshift-logging/logging-es-0                                  glusterfs-ocs-block             2d
+pvc-a7f5a656-3869-11ea-bfd9-002a4a107843   50Gi       RWO            Delete           Bound     openshift-monitoring/prometheus-k8s-db-prometheus-k8s-1         glusterfs-ocs                   6d
+pvc-be0668eb-3869-11ea-bfd9-002a4a107843   2Gi        RWO            Delete           Bound     openshift-monitoring/alertmanager-main-db-alertmanager-main-0   glusterfs-ocs                   6d
+pvc-cb3e9064-3869-11ea-bfd9-002a4a107843   2Gi        RWO            Delete           Bound     openshift-monitoring/alertmanager-main-db-alertmanager-main-1   glusterfs-ocs                   6d
+pvc-d4d5a899-3869-11ea-bfd9-002a4a107843   2Gi        RWO            Delete           Bound     openshift-monitoring/alertmanager-main-db-alertmanager-main-2   glusterfs-ocs                   6d
+registry-volume                            20Gi       RWX            Retain           Bound     default/registry-claim                                                                          6d

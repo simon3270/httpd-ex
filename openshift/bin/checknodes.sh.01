@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Check the nodes in a cluster are alive
+
+# default OSR3
+cluster=${1:-osr3}
+
+if [[ $cluster =~ ^osp ]]; then
+  dom=dbag.prod
+else
+  dom=xeop.de
+fi
+
+chkalive() {
+  ping -c 1 -W 4 $1  >/dev/null 2>&1
+}
+
+chkssh() {
+  timeout 10 ssh root@$1 date > /dev/null 2>&1
+}
+
+chkhost() {
+  if chkalive $1; then
+    if chkssh $1; then
+      echo $1 alive
+    else
+      echo $1 pingable but no ssh
+    fi
+  else
+    echo $1 DEAD
+  fi
+}
+
+for ii in 1 2 3; do
+  hst=${cluster}master0${ii}.${dom}
+  chkhost $hst
+done
+
+for ii in 1 2 3; do
+  hst=${cluster}infra0${ii}.${dom}
+  chkhost $hst
+done
+
+for ii in 1 2; do
+  hst=${cluster}node0${ii}.${dom}
+  chkhost $hst
+done
+
+for ii in 1 2 4 4; do
+  hst=${cluster}glfs0${ii}.${dom}
+  chkhost $hst
+done
+

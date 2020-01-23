@@ -1,0 +1,21 @@
+[root@osr4master01 ~]# echo ======== DOCKER ========; docker ps ; echo; echo ======== CRI-O =========; crictl ps
+======== DOCKER ========
+CONTAINER ID        IMAGE                                                                                                            COMMAND                  CREATED              STATUS              PORTS               NAMES
+d9a15103dbb3        a125d8768fbf                                                                                                     "/bin/bash -c '#!/..."   40 seconds ago       Up 39 seconds                           k8s_openvswitch_ovs-bcvnt_openshift-sdn_85f1e1a7-3d1a-11ea-bb36-002a4a10784e_0
+73e40fcfaad1        registry.redhat.io/openshift3/ose-pod:v3.11.161                                                                  "/usr/bin/pod"           41 seconds ago       Up 40 seconds                           k8s_POD_ovs-bcvnt_openshift-sdn_85f1e1a7-3d1a-11ea-bb36-002a4a10784e_0
+a2d581b02148        a125d8768fbf                                                                                                     "/bin/bash -c '#!/..."   41 seconds ago       Up 40 seconds                           k8s_sdn_sdn-crl2d_openshift-sdn_8567a61c-3d1a-11ea-bb36-002a4a10784e_0
+f3019950214e        registry.redhat.io/openshift3/ose-pod:v3.11.161                                                                  "/usr/bin/pod"           42 seconds ago       Up 40 seconds                           k8s_POD_sdn-crl2d_openshift-sdn_8567a61c-3d1a-11ea-bb36-002a4a10784e_0
+9dde73fc3e64        registry.redhat.io/openshift3/ose-node@sha256:dc8bc02e4a3d9b1c4fc4243c28c15711ce9bf5e1be4e02fc771cde0b4c433882   "/bin/bash -c '#!/..."   About a minute ago   Up About a minute                       k8s_sync_sync-vwnrx_openshift-node_56509b02-3d1a-11ea-bb36-002a4a10784e_0
+5fcd856fe30e        registry.redhat.io/openshift3/ose-pod:v3.11.161                                                                  "/usr/bin/pod"           About a minute ago   Up About a minute                       k8s_POD_master-etcd-osr4master01.xeop.de_kube-system_4f6dd99b309b14e9a717193312963a2d_0
+ab80306786ff        registry.redhat.io/openshift3/ose-pod:v3.11.161                                                                  "/usr/bin/pod"           About a minute ago   Up About a minute                       k8s_POD_master-controllers-osr4master01.xeop.de_kube-system_773ac78de93199e74ca89f0226fe1ece_0
+e440bd1050e7        registry.redhat.io/openshift3/ose-pod:v3.11.161                                                                  "/usr/bin/pod"           About a minute ago   Up About a minute                       k8s_POD_master-api-osr4master01.xeop.de_kube-system_cfbe77f849b6653c479becab5e6a7e50_0
+6ede4db546a6        registry.redhat.io/openshift3/ose-pod:v3.11.161                                                                  "/usr/bin/pod"           About a minute ago   Up About a minute                       k8s_POD_sync-vwnrx_openshift-node_56509b02-3d1a-11ea-bb36-002a4a10784e_0
+
+======== CRI-O =========
+CONTAINER ID        IMAGE                                                              CREATED              STATE               NAME                ATTEMPT
+61d767ab36425       a125d8768fbf65d032a719e42f223d22879139b2df63b5de2b5240a006277632   About a minute ago   Running             sync                0
+8bb59e30b7c6b       d636cc8689ea7ebec89983e49330e2b7b30d7b24feae8944894a82539650e635   5 minutes ago        Running             etcd                0
+6752c417c42c8       67b4e7d5ac71d33adbaf83a1a0d68d45b5c3f0811f4224ebafb8cbbdb6d66ffc   5 minutes ago        Running             controllers         0
+c72ec2ee6c8fa       67b4e7d5ac71d33adbaf83a1a0d68d45b5c3f0811f4224ebafb8cbbdb6d66ffc   5 minutes ago        Running             api                 0
+[root@osr4master01 ~]#
+
